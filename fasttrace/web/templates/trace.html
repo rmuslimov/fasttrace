@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+
+  <div id="masthead">
+    <div class="container trace-block">
+      <div class="row">
+        <div class="col-md-3" id="header-container" style="padding-bottom: 20px">
+          <form class="form-inline" role="form">
+            {% for tag, name in tags %}
+            <div class="form-group col-md-12">
+              <div class="checkbox" data-id="{{ tag }}">
+                <label>
+                  <input type="checkbox" checked>{{ name }}
+                </label>
+              </div>
+            </div>
+            {% end %}
+          </form>
+        </div>
+
+        <div class="col-md-9" id="items-container">
+        </div>
+      </div>
+    </div><!-- /cont -->
+  </div>
+
+  <script src="/static/js/underscore.js"></script>
+  <script src="/static/js/trace.js"></script>
+  <script type="text/template" id="row-item">
+
+    <div class="row item">
+      <span><b><%= method_name %></b> <%= status %>; <% if (session) { print('<b>session:</b>' + session); } %> <b>time:</b> <%= timespent %>s. </span>
+      <div class="pull-right">
+        <a target="blank" href="<%= request_url %>">Request</a> | <a target="blank" href="<%= response_url %>">Response</a>
+      </div>
+      <hr>
+    </div>
+  </script>
+
+{% end %}

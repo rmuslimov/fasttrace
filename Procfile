@@ -1,0 +1,1 @@
+web: python -m fasttrace.web.app 8090
