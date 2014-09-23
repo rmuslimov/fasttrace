@@ -1,0 +1,5 @@
+=========
+Fasttrace
+=========
+
+Simple trace application

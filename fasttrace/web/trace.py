@@ -3,7 +3,6 @@
 
 @author: rmuslimov
 @date: 05.05.2014
-@copyright (c) 2014 GetGoing Inc.
 
 """
 
