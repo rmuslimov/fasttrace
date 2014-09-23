@@ -42,7 +42,7 @@ class TraceHandler(tornado.web.RequestHandler):
             return
 
         _, kind = uid.split('.')
-        value = self.mc.get(uid)
+        value = self.mc.get(uid).encode("utf-8")
 
         if kind == 'xml':
             source_xml = xml.dom.minidom.parseString(value)
