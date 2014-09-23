@@ -7,7 +7,7 @@
 """
 
 TRACE_TOOL_URL = "amqp://guest:guest@localhost:5672/fasttrace"
-MEMCACHED_URL = "localhost:11211"
+MEMCACHED_URL = "127.0.0.1"
 
 CACHE_TIMEOUT = 10
 

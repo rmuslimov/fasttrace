@@ -10,7 +10,8 @@
         ws.onmessage = function(message) {
             var data = $.parseJSON(message.data);
 
-            var filtered = $('#show_'+data['kind']+' input');
+            var filtered = $('[data-id='+data['kind']+'] input');
+            console.log(filtered);
             if (filtered.length && filtered[0].checked) {
                 var item = _.template($("#row-item").html())(data);
                 $(item).hide().prependTo("#items-container").fadeIn(500);

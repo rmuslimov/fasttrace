@@ -4,7 +4,7 @@
   <div id="masthead">
     <div class="container trace-block">
       <div class="row">
-        <div class="col-md-3" id="header-container" style="padding-bottom: 20px">
+        <div class="col-md-2" id="header-container" style="padding-bottom: 20px">
           <form class="form-inline" role="form">
             {% for tag, name in tags %}
             <div class="form-group col-md-12">
@@ -18,7 +18,7 @@
           </form>
         </div>
 
-        <div class="col-md-9" id="items-container">
+        <div class="col-md-10" id="items-container">
         </div>
       </div>
     </div><!-- /cont -->
@@ -29,7 +29,7 @@
   <script type="text/template" id="row-item">
 
     <div class="row item">
-      <span><b><%= method_name %></b> <%= status %>; <% if (session) { print('<b>session:</b>' + session); } %> <b>time:</b> <%= timespent %>s. </span>
+      <span><%= title %>; <b>T:</b> <%= timespent %>s. </span>
       <div class="pull-right">
         <a target="blank" href="<%= request_url %>">Request</a> | <a target="blank" href="<%= response_url %>">Response</a>
       </div>
