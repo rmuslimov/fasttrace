@@ -5,22 +5,22 @@
 @date: 23.09.2014
 
 """
-
 import json
 
+from datetime import datetime
 from uuid import uuid1
 
 import pika
-
 import pylibmc
 
 from . import settings
-from .utils import parse_amqp_url
+from .utils import parse_amqp_url, parse_memcached_url
 
 
 def connect_to_memcached(memcached_url):
+    url = parse_memcached_url(memcached_url)
     return pylibmc.Client(
-        [memcached_url], binary=True,
+        [url], binary=True,
         behaviors={"tcp_nodelay": True, "ketama": True})
 
 
@@ -29,7 +29,8 @@ class TraceConnection(object):
     def __init__(self, amqp_url=None, memcached_url=None):
         """ Setup client with provided creds or use own"""
         self.creds = parse_amqp_url(amqp_url or settings.TRACE_TOOL_URL)
-        self.memcached_url = memcached_url or settings.MEMCACHED_URL
+        self.memcached_url = parse_memcached_url(
+            memcached_url or settings.CACHE_URL)
 
         self.mc = connect_to_memcached(self.memcached_url)
 
@@ -65,11 +66,12 @@ class TraceConnection(object):
         self.mc.set(response_url, response, settings.CACHE_TIMEOUT)
 
         kwargs = {
+            'kind': kind,
+            'now': "{0:%d%b%y %H:%M:%S}".format(datetime.utcnow()),
             'request_url': request_url,
             'response_url': response_url,
-            'timespent': round(timespent, 4),
-            'title': title,
-            'kind': kind
+            'timespent': round(timespent, 2),
+            'title': title
         }
 
         channel.basic_publish(

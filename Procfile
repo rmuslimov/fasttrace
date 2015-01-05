@@ -1,1 +1,1 @@
-web: python -m fasttrace.web.app 8080
+web: python -m fasttrace.web.app ${DEFAULT_PORT:-8080}

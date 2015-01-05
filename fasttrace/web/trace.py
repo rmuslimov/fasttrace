@@ -7,22 +7,30 @@
 """
 
 import json
+import logging
+import time
+
+import xml.dom.minidom
 from uuid import uuid1
 
 import pika
-from pika.adapters.tornado_connection import TornadoConnection
 
 import tornado.escape
 import tornado.template
 import tornado.web
 import tornado.websocket
 
-import xml.dom.minidom
+
+from pika.adapters.tornado_connection import TornadoConnection
+
+from tornado.ioloop import IOLoop
 
 from .. import settings
 from ..api import connect_to_memcached
 from ..utils import parse_amqp_url
 from ..utils.updjson import dump_to_json
+
+logger = logging.getLogger(__name__)
 
 
 CREDS = parse_amqp_url(settings.TRACE_TOOL_URL)
@@ -31,7 +39,7 @@ CREDS = parse_amqp_url(settings.TRACE_TOOL_URL)
 class TraceHandler(tornado.web.RequestHandler):
 
     def __init__(self, *args, **kwargs):
-        self.mc = connect_to_memcached(settings.MEMCACHED_URL)
+        self.mc = connect_to_memcached(settings.CACHE_URL)
         tornado.web.RequestHandler.__init__(self, *args, **kwargs)
 
     def get(self, *args):
@@ -45,7 +53,11 @@ class TraceHandler(tornado.web.RequestHandler):
         value = self.mc.get(uid)
 
         if kind == 'xml':
-            source_xml = xml.dom.minidom.parseString(value)
+            try:
+                source_xml = xml.dom.minidom.parseString(value)
+            except UnicodeDecodeError:
+                source_xml = xml.dom.minidom.parseString(value.encode('utf-8'))
+
             pretty = source_xml.toprettyxml()
         elif kind == 'json':
             pretty = dump_to_json(value, indent=2)
@@ -81,13 +93,26 @@ class RabbitClient(object):
 
     def __init__(self, app=None):
         self.app = app
+        self._connect()
+
+    def _connect(self):
         conn = pika.ConnectionParameters(
             host=CREDS['host'], port=int(CREDS['port']),
             virtual_host='/',
             credentials=pika.PlainCredentials(
                 CREDS['user'], CREDS['pasw']))
 
-        TornadoConnection(conn, on_open_callback=self.on_connected)
+        self.tc = TornadoConnection(
+            conn, on_open_callback=self.on_connected,
+            on_open_error_callback=self.on_disconnect
+        )
+
+        self.tc.add_on_close_callback(self.on_disconnect)
+
+    def on_disconnect(self, *args):
+        logger.warning("Connection lost, reconnect in 5 seconds...")
+        IOLoop.instance().add_timeout(
+            time.time() + 5, self._connect)
 
     def on_connected(self, con):
         con.channel(self.on_channel_open)
